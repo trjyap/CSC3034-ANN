@@ -12,7 +12,7 @@ from tensorflow.keras import models, layers
 
 
 
-def main(csv_path='Exam_Score_Prediction.csv'):
+def main(csv_path='Dataset/Exam_Score_Prediction.csv'):
     # Reproducibility
     np.random.seed(42)
     tf.random.set_seed(42)
@@ -129,7 +129,7 @@ def main(csv_path='Exam_Score_Prediction.csv'):
     plt.legend()
     plt.title('Training vs Validation Loss')
     plt.tight_layout()
-    loss_plot_path = 'loss_curve.png'
+    loss_plot_path = 'Output/loss_curve.png'
     plt.savefig(loss_plot_path)
     print(f"Saved loss curve to {loss_plot_path}")
 
@@ -143,14 +143,14 @@ def main(csv_path='Exam_Score_Prediction.csv'):
     plt.ylabel('Predicted Exam Score')
     plt.title('True vs Predicted Exam Scores')
     plt.tight_layout()
-    scatter_plot_path = 'true_vs_pred.png'
+    scatter_plot_path = 'Output/true_vs_pred.png'
     plt.savefig(scatter_plot_path)
     print(f"Saved true vs predicted plot to {scatter_plot_path}")
 
 
 if __name__ == '__main__':
     # Use default CSV in the repo root; change path if necessary
-    csv_file = 'Exam_Score_Prediction.csv'
+    csv_file = 'Dataset/Exam_Score_Prediction.csv'
     if not os.path.exists(csv_file):
         raise FileNotFoundError(f"CSV file not found at {csv_file}. Ensure the file is in the repo root.")
     main(csv_file)
