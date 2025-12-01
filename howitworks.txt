@@ -1,0 +1,155 @@
+# Code Explanation: Exam Score Prediction with Neural Network
+
+## Overview
+This script builds and trains an Artificial Neural Network (ANN) to predict student exam scores based on various features like demographics, study habits, and exam conditions.
+
+## Step-by-Step Breakdown
+
+### 1. **Imports** (Lines 1-11)
+```python
+import numpy as np        # Numerical operations, arrays
+import pandas as pd       # Data manipulation, CSV reading
+import matplotlib.pyplot  # Plotting graphs
+from sklearn...          # Machine learning utilities
+import tensorflow as tf  # Deep learning framework
+from tensorflow.keras    # High-level neural network API
+```
+
+### 2. **Data Loading** (Lines 19-21)
+```python
+df = pd.read_csv(csv_path)
+```
+Reads the CSV dataset into a pandas DataFrame. Default path is `Dataset/Exam_Score_Prediction.csv`.
+
+### 3. **Data Inspection** (Lines 23-34)
+```python
+df.head()              # Shows first 5 rows
+df.info()              # Column types, null counts
+df.isnull().sum()      # Missing values per column
+df.duplicated().sum()  # Count duplicate rows
+```
+Prints dataset statistics to understand the data structure and quality.
+
+### 4. **Data Cleaning** (Lines 37-44)
+- **Removes duplicates**: If any duplicate rows exist, they're dropped
+- **Handles missing values**: Drops rows with any null values (dataset typically has none)
+- **Resets index**: Ensures clean row numbering after deletions
+
+### 5. **Feature Engineering** (Lines 46-71)
+```python
+df = df.drop(columns=['student_id'])  # Remove ID (not predictive)
+```
+
+**One-Hot Encoding** for categorical variables:
+- Converts text categories (e.g., `gender: ['Male', 'Female']`) into binary columns
+- Example: `gender_Male=1, gender_Female=0` or vice versa
+- Applied to: gender, course, internet_access, sleep_quality, study_method, facility_rating, exam_difficulty
+
+```python
+X = df.drop(columns=['exam_score'])  # Features (input)
+y = df['exam_score']                  # Target (output)
+```
+Separates independent variables (X) from the dependent variable (y).
+
+### 6. **Data Splitting** (Lines 76-82)
+```python
+# 70% train, 15% validation, 15% test
+X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.30)
+X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5)
+```
+- **Training set (70%)**: Teaches the model patterns
+- **Validation set (15%)**: Tunes hyperparameters during training
+- **Test set (15%)**: Final performance evaluation (unseen data)
+
+### 7. **Feature Scaling** (Lines 84-88)
+```python
+scaler = StandardScaler()
+X_train_scaled = scaler.transform(X_train)
+```
+Standardizes features to mean=0, std=1. This helps neural networks learn faster and more reliably by putting all features on the same scale.
+
+### 8. **Model Architecture** (Lines 90-101)
+```python
+model = models.Sequential([
+    layers.Input(shape=(input_dim,)),    # Input layer
+    layers.Dense(64, activation='relu'), # Hidden layer 1: 64 neurons
+    layers.Dense(32, activation='relu'), # Hidden layer 2: 32 neurons
+    layers.Dense(1, activation='linear') # Output layer: 1 neuron (score)
+])
+```
+
+**Architecture**:
+- **Input**: Features after one-hot encoding
+- **Hidden Layer 1**: 64 neurons with ReLU activation (introduces non-linearity)
+- **Hidden Layer 2**: 32 neurons with ReLU
+- **Output**: 1 neuron with linear activation (predicts continuous score)
+
+**Compilation**:
+- **Optimizer**: Adam (adaptive learning rate)
+- **Loss**: MSE (Mean Squared Error) - measures prediction accuracy
+- **Metrics**: MAE (Mean Absolute Error) - easier to interpret than MSE
+
+### 9. **Training** (Lines 103-110)
+```python
+history = model.fit(X_train_scaled, y_train, epochs=100, 
+                    validation_data=(X_val_scaled, y_val))
+```
+- Trains for **100 epochs** (complete passes through training data)
+- Adjusts weights to minimize loss
+- Monitors validation loss to detect overfitting
+- `history` stores loss/metrics per epoch for plotting
+
+### 10. **Evaluation** (Lines 112-122)
+```python
+y_pred = model.predict(X_test_scaled)
+mae = mean_absolute_error(y_test, y_pred)
+rmse = sqrt(mean_squared_error(y_test, y_pred))
+r2 = r2_score(y_test, y_pred)
+```
+
+**Metrics**:
+- **MAE**: Average absolute difference between predictions and true scores (e.g., 5.2 points off)
+- **RMSE**: Penalizes large errors more heavily than MAE
+- **R²**: How much variance is explained (1.0 = perfect, 0.0 = useless)
+
+### 11. **Visualization** (Lines 124-152)
+
+**Plot 1: Loss Curve** (`loss_curve.png`)
+```python
+plt.plot(history.history['loss'], label='train_loss')
+plt.plot(history.history['val_loss'], label='val_loss')
+```
+Shows how training/validation loss decreased over epochs. If val_loss increases while train_loss decreases → overfitting.
+
+**Plot 2: Predictions vs. True Scores** (`true_vs_pred.png`)
+```python
+plt.scatter(y_test, y_pred)
+plt.plot([min, max], [min, max], 'r--')  # Perfect prediction line
+```
+Points near the red diagonal line = accurate predictions. Scatter = error.
+
+### 12. **Main Entry Point** (Lines 155-157)
+```python
+if __name__ == '__main__':
+    csv_file = 'Dataset/Exam_Score_Prediction.csv'
+    main(csv_file)
+```
+Checks if file exists, then runs the entire pipeline when script is executed directly.
+
+## Key Concepts
+
+**Why Neural Networks?**
+- Can learn complex non-linear relationships between features and exam scores
+- Automatically discovers patterns (e.g., "students with good sleep + difficult exam → lower scores")
+
+**Why These Layers?**
+- Starts wide (64 neurons) to capture complex patterns
+- Narrows down (32 neurons) to essential patterns
+- Ends with 1 neuron for single score prediction
+
+**Reproducibility** (Lines 16-17):
+```python
+np.random.seed(42)
+tf.random.set_seed(42)
+```
+Ensures consistent results across runs by fixing random initialization.

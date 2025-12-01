@@ -3,14 +3,15 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# Machine learning imports
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
+# Deep learning framework
 import tensorflow as tf
+# High level neural network API
 from tensorflow.keras import models, layers
-
-
 
 def main(csv_path='Dataset/Exam_Score_Prediction.csv'):
     # Reproducibility
